@@ -2,6 +2,7 @@ import { Box, Text, TextField, Image, Button } from '@skynexui/components';
 import React from 'react';
 import appConfig from '../config.json';
 import { createClient } from '@supabase/supabase-js';
+import { TailSpin } from 'react-loader-spinner';
 
 const SUPABASE_ANNON_KEY =
 	'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY0MzMxMjk1MiwiZXhwIjoxOTU4ODg4OTUyfQ.m2kjCCWYL1SrRw-1kfbONGIq5yek8mZL1enYce77vWs';
@@ -11,14 +12,17 @@ const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANNON_KEY);
 export default function ChatPage() {
 	const [message, setMessage] = React.useState('');
 	const [messageList, setMessageList] = React.useState([]);
+	const [loading, setLoading] = React.useState(false);
 
 	React.useEffect(() => {
+		setLoading(true);
 		supabaseClient
 			.from('messages')
 			.select('*')
 			.order('id', { ascending: false })
 			.then(({ data }) => {
 				setMessageList(data);
+				setLoading(false);
 			});
 	}, []);
 
@@ -90,8 +94,20 @@ export default function ChatPage() {
 						padding: '16px',
 					}}
 				>
-					<MessageList messages={messageList} onDeleteClick={handleDeleteMessage} />
+					{loading ? (
+						<Box
+							styleSheet={{
+								flex: 1,
+								display: 'flex',
+								alignItems: 'center',
+								justifyContent: 'center',
+							}}
+						>
+							<TailSpin width={50} />
+						</Box>
+					) : null}
 
+					<MessageList messages={messageList} onDeleteClick={handleDeleteMessage} />
 					<Box
 						as='form'
 						styleSheet={{
@@ -208,12 +224,14 @@ function MessageList(props) {
 									fontSize: '10px',
 									marginLeft: '8px',
 									color: appConfig.theme.colors.neutrals[300],
+									marginRight: '8px',
 								}}
 								tag='span'
 							>
 								{new Date().toLocaleDateString()}
 							</Text>
 							<Button
+							fullWidth={}
 								type='button'
 								iconName='trash'
 								variant='tertiary'
