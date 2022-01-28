@@ -1,18 +1,39 @@
-import { Box, Text, TextField, Image, Button, Icon } from '@skynexui/components';
+import { Box, TextField, Button } from '@skynexui/components';
 import React from 'react';
 import appConfig from '../config.json';
 import { createClient } from '@supabase/supabase-js';
-import { TailSpin } from 'react-loader-spinner';
+import { ButtonSendSticker } from '../src/components/ButtonSendSticker';
+
+import Header from '../src/components/Header';
+import Loading from '../src/components/Loading';
+import MessageList from '../src/components/MessageList';
+
+import { useRouter } from 'next/router';
 
 const SUPABASE_ANNON_KEY =
 	'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY0MzMxMjk1MiwiZXhwIjoxOTU4ODg4OTUyfQ.m2kjCCWYL1SrRw-1kfbONGIq5yek8mZL1enYce77vWs';
 const SUPABASE_URL = 'https://ylfvqrvdaaechihgfrxi.supabase.co';
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANNON_KEY);
 
+function listMessagesInRealTime(addMessage, deleteMessage) {
+	return supabaseClient
+		.from('messages')
+		.on('INSERT', (response) => {
+			addMessage(response.new);
+		})
+		.on('DELETE', (response) => {
+			deleteMessage(response.old);
+		})
+		.subscribe();
+}
+
 export default function ChatPage() {
 	const [message, setMessage] = React.useState('');
 	const [messageList, setMessageList] = React.useState([]);
 	const [loading, setLoading] = React.useState(false);
+	const router = useRouter();
+
+	const loggedUser = router.query.username;
 
 	React.useEffect(() => {
 		setLoading(true);
@@ -24,21 +45,33 @@ export default function ChatPage() {
 				setMessageList(data);
 				setLoading(false);
 			});
+
+		listMessagesInRealTime(handleNewMessageFromDb, handleDeleteMessageFromDb);
 	}, []);
+
+	const handleNewMessageFromDb = (newMessage) => {
+		setMessageList((value) => {
+			return [newMessage, ...value];
+		});
+	};
+
+	const handleDeleteMessageFromDb = (oldMessage) => {
+		setMessageList((value) => {
+			return value.filter((message) => message.id !== oldMessage.id);
+		});
+	};
 
 	function handleNewMessage(newMessage) {
 		if (newMessage.length > 0) {
 			const message = {
 				text: newMessage,
-				from: 'Gustavotc',
+				from: loggedUser,
 			};
 
 			supabaseClient
 				.from('messages')
 				.insert([message])
-				.then(({ data }) => {
-					setMessageList([data[0], ...messageList]);
-				});
+				.then(({ data }) => {});
 			setMessage('');
 		}
 	}
@@ -48,9 +81,7 @@ export default function ChatPage() {
 			.from('messages')
 			.delete(true)
 			.match({ id: messageId })
-			.then(({ data }) => {
-				setMessageList(messageList.filter((message) => message.id !== data[0].id));
-			});
+			.then(({ data }) => {});
 	}
 
 	return (
@@ -94,20 +125,13 @@ export default function ChatPage() {
 						padding: '16px',
 					}}
 				>
-					{loading ? (
-						<Box
-							styleSheet={{
-								flex: 1,
-								display: 'flex',
-								alignItems: 'center',
-								justifyContent: 'center',
-							}}
-						>
-							<TailSpin width={50} />
-						</Box>
-					) : null}
+					{loading && <Loading />}
 
-					<MessageList messages={messageList} onDeleteClick={handleDeleteMessage} />
+					<MessageList
+						messages={messageList}
+						onDeleteClick={handleDeleteMessage}
+						loggedUser={loggedUser}
+					/>
 					<Box
 						as='form'
 						styleSheet={{
@@ -144,103 +168,31 @@ export default function ChatPage() {
 								color: appConfig.theme.colors.neutrals[200],
 							}}
 						/>
-						<Button
-							type='submit'
-							iconName='play'
-							variant='secondary'
-							colorVariant='positive'
-						/>
+						<Box
+							styleSheet={{
+								display: 'flex',
+								flexDirection: 'row',
+							}}
+						>
+							<ButtonSendSticker
+								onStickerClick={(sticker) => {
+									console.log(sticker);
+									handleNewMessage(':sticker:' + sticker);
+								}}
+							/>
+							<Button
+								styleSheet={{
+									marginLeft: '8px',
+								}}
+								type='submit'
+								iconName='paperPlane'
+								variant='secondary'
+								colorVariant='positive'
+							/>
+						</Box>
 					</Box>
 				</Box>
 			</Box>
-		</Box>
-	);
-}
-
-function Header() {
-	return (
-		<>
-			<Box
-				styleSheet={{
-					width: '100%',
-					marginBottom: '16px',
-					display: 'flex',
-					alignItems: 'center',
-					justifyContent: 'space-between',
-				}}
-			>
-				<Text variant='heading5'>Chat</Text>
-				<Button variant='tertiary' colorVariant='neutral' label='Logout' href='/' />
-			</Box>
-		</>
-	);
-}
-
-function MessageList(props) {
-	return (
-		<Box
-			tag='ul'
-			styleSheet={{
-				overflow: 'scroll',
-				display: 'flex',
-				flexDirection: 'column-reverse',
-				flex: 1,
-				color: appConfig.theme.colors.neutrals['000'],
-				marginBottom: '16px',
-			}}
-		>
-			{props.messages.map((message) => {
-				return (
-					<Text
-						key={message.id}
-						tag='li'
-						styleSheet={{
-							borderRadius: '5px',
-							padding: '6px',
-							marginBottom: '12px',
-							hover: {
-								backgroundColor: appConfig.theme.colors.neutrals[700],
-							},
-						}}
-					>
-						<Box styleSheet={{ marginBottom: '8px' }}>
-							<Image
-								styleSheet={{
-									width: '20px',
-									height: '20px',
-									borderRadius: '50%',
-									display: 'inline-block',
-									marginRight: '8px',
-								}}
-								src={`https://github.com/${message.from}.png`}
-							/>
-							<Text tag='strong'>{message.from}</Text>
-							<Text
-								styleSheet={{
-									fontSize: '14px',
-									marginLeft: '8px',
-									marginRight: '8px',
-									color: appConfig.theme.colors.neutrals[300],
-								}}
-								tag='span'
-							>
-								{new Date().toLocaleDateString()}
-							</Text>
-
-							<Icon
-								name='FaTrash'
-								size={'1.3ch'}
-								onClick={() => props.onDeleteClick(message.id)}
-								styleSheet={{
-									display: 'inline-block',
-									color: 'red',
-								}}
-							/>
-						</Box>
-						{message.text}
-					</Text>
-				);
-			})}
 		</Box>
 	);
 }
