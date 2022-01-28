@@ -1,4 +1,4 @@
-import { Box, Text, TextField, Image, Button } from '@skynexui/components';
+import { Box, Text, TextField, Image, Button, Icon } from '@skynexui/components';
 import React from 'react';
 import appConfig from '../config.json';
 import { createClient } from '@supabase/supabase-js';
@@ -203,11 +203,7 @@ function MessageList(props) {
 							},
 						}}
 					>
-						<Box
-							styleSheet={{
-								marginBottom: '8px',
-							}}
-						>
+						<Box styleSheet={{ marginBottom: '8px' }}>
 							<Image
 								styleSheet={{
 									width: '20px',
@@ -221,22 +217,24 @@ function MessageList(props) {
 							<Text tag='strong'>{message.from}</Text>
 							<Text
 								styleSheet={{
-									fontSize: '10px',
+									fontSize: '14px',
 									marginLeft: '8px',
-									color: appConfig.theme.colors.neutrals[300],
 									marginRight: '8px',
+									color: appConfig.theme.colors.neutrals[300],
 								}}
 								tag='span'
 							>
 								{new Date().toLocaleDateString()}
 							</Text>
-							<Button
-							fullWidth={}
-								type='button'
-								iconName='trash'
-								variant='tertiary'
-								colorVariant='negative'
+
+							<Icon
+								name='FaTrash'
+								size={'1.3ch'}
 								onClick={() => props.onDeleteClick(message.id)}
+								styleSheet={{
+									display: 'inline-block',
+									color: 'red',
+								}}
 							/>
 						</Box>
 						{message.text}
