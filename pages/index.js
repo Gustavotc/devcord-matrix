@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { Box, Button, Text, TextField, Image } from '@skynexui/components';
 import appConfig from '../config.json';
 import { useRouter } from 'next/router';
+import GithubAPI from '../src/services/GithubAPI';
 
 function Title(props) {
 	const Tag = props.tag || 'h1';
@@ -26,22 +27,10 @@ export default function HomePage() {
 	const [gitLocation, setGitLocation] = React.useState('');
 
 	useEffect(() => {
-		function getUserInfo() {
-			if (username.length >= 2) {
-				fetch(`https://api.github.com/users/${username}`)
-					.then((response) => {
-						return response.json();
-					})
-					.then((data) => {
-						setGitName(data.name);
-						setGitLocation(data.location ?? 'Sem localização');
-					});
-			} else {
-				setGitLocation('');
-				setGitName('');
-			}
-		}
-		getUserInfo();
+		GithubAPI.getUserNameAndLocation(username).then(({ name, location }) => {
+			setGitName(name);
+			setGitLocation(location);
+		});
 	}, [username]);
 
 	return (

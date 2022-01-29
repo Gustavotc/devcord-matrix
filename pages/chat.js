@@ -52,7 +52,6 @@ export default function ChatPage() {
 		listMessagesInRealTime(handleNewMessageFromDb, handleDeleteMessageFromDb);
 
 		GithubAPI.getUserName(loggedUser).then((name) => {
-			console.log(name);
 			setUserName(name);
 		});
 	}, []);
