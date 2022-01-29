@@ -2,7 +2,6 @@ import { Box, Text, Button } from '@skynexui/components';
 import RoundedImage from './RoundedImage';
 
 function Header(props) {
-	console.log(props);
 	return (
 		<>
 			<Box

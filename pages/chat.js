@@ -183,7 +183,6 @@ export default function ChatPage() {
 						>
 							<ButtonSendSticker
 								onStickerClick={(sticker) => {
-									console.log(sticker);
 									handleNewMessage(':sticker:' + sticker);
 								}}
 							/>
