@@ -10,6 +10,8 @@ import MessageList from '../src/components/MessageList';
 
 import { useRouter } from 'next/router';
 
+import GithubAPI from '../src/services/GithubAPI';
+
 const SUPABASE_ANNON_KEY =
 	'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY0MzMxMjk1MiwiZXhwIjoxOTU4ODg4OTUyfQ.m2kjCCWYL1SrRw-1kfbONGIq5yek8mZL1enYce77vWs';
 const SUPABASE_URL = 'https://ylfvqrvdaaechihgfrxi.supabase.co';
@@ -31,6 +33,7 @@ export default function ChatPage() {
 	const [message, setMessage] = React.useState('');
 	const [messageList, setMessageList] = React.useState([]);
 	const [loading, setLoading] = React.useState(false);
+	const [userName, setUserName] = React.useState('');
 	const router = useRouter();
 
 	const loggedUser = router.query.username;
@@ -47,6 +50,11 @@ export default function ChatPage() {
 			});
 
 		listMessagesInRealTime(handleNewMessageFromDb, handleDeleteMessageFromDb);
+
+		GithubAPI.getUserName(loggedUser).then((name) => {
+			console.log(name);
+			setUserName(name);
+		});
 	}, []);
 
 	const handleNewMessageFromDb = (newMessage) => {
@@ -109,10 +117,10 @@ export default function ChatPage() {
 					height: '100%',
 					maxWidth: '95%',
 					maxHeight: '95vh',
-					padding: '32px',
+					padding: '24px',
 				}}
 			>
-				<Header />
+				<Header loggedUser={loggedUser} username={userName} />
 				<Box
 					styleSheet={{
 						position: 'relative',

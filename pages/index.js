@@ -34,7 +34,7 @@ export default function HomePage() {
 					})
 					.then((data) => {
 						setGitName(data.name);
-						setGitLocation(data.location);
+						setGitLocation(data.location ?? 'Sem localização');
 					});
 			} else {
 				setGitLocation('');
@@ -84,6 +84,7 @@ export default function HomePage() {
 							event.preventDefault();
 							router.push(`/chat?username=${username}`);
 						}}
+						autocomplete={'off'}
 						styleSheet={{
 							display: 'flex',
 							flexDirection: 'column',

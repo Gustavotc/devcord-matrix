@@ -1,5 +1,6 @@
 import { Box, Text, Image, Icon } from '@skynexui/components';
 import appConfig from '../../config.json';
+import RoundedImage from './RoundedImage';
 
 function MessageList(props) {
 	return (
@@ -46,15 +47,9 @@ function MessageList(props) {
 							/>
 						)}
 						<Box styleSheet={{ marginBottom: '8px' }}>
-							<Image
-								styleSheet={{
-									width: '20px',
-									height: '20px',
-									borderRadius: '50%',
-									display: 'inline-block',
-									marginRight: '8px',
-								}}
+							<RoundedImage
 								src={`https://github.com/${message.from}.png`}
+								size={'20px'}
 							/>
 							<Text tag='strong'>{message.from}</Text>
 							<Text
